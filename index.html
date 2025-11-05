@@ -939,26 +939,69 @@
     $('#regCancel').addEventListener('click', ()=> $('#registerBlock').style.display='none');
 
     $('#loginBtnModal').addEventListener('click', async ()=>{
-      const u = $('#loginUser').value.trim(), p = $('#loginPass').value.trim();
-      if(!u || !p){ $('#loginError').style.display='block'; $('#loginError').textContent='Usuario y contraseña requeridos'; return; }
-      try{
-        const s = await getDocs(query(COL('users'), where('username','==', u), where('password','==', p)));
-        if(s.empty){ $('#loginError').style.display='block'; $('#loginError').textContent='Usuario o contraseña incorrectos'; return; }
-        let found=null; s.forEach(d=> found={ id:d.id, ...d.data() });
+  const u = $('#loginUser').value.trim(), p = $('#loginPass').value.trim();
+  if(!u || !p){
+    $('#loginError').style.display='block';
+    $('#loginError').textContent='Usuario y contraseña requeridos';
+    return;
+  }
+  try {
+    const s = await getDocs(query(COL('users'), where('username','==', u)));
+    if(s.empty){
+      $('#loginError').style.display='block';
+      $('#loginError').textContent='Usuario no encontrado';
+      return;
+    }
+    let found = null;
+    s.forEach(d=> found = { id:d.id, ...d.data() });
+    if(found.password !== p){
+      $('#loginError').style.display='block';
+      $('#loginError').textContent='Contraseña incorrecta';
+      return;
+    }
+    STATE.currentUser = found;
+    STATE.adminMode = false;
+    updateHeader();
+    $('#loginModal').style.display='none';
+    await pushLog(`Sesión iniciada: ${found.username}`);
+    renderCards();
+  } catch(e) {
+    console.error('login', e);
+    $('#loginError').style.display='block';
+    $('#loginError').textContent='Error en login';
+  }
+});
         STATE.currentUser = found; STATE.adminMode = false; updateHeader(); $('#loginModal').style.display='none'; await pushLog(`Sesión iniciada: ${found.username}`); renderCards();
       }catch(e){ console.error('login', e); $('#loginError').style.display='block'; $('#loginError').textContent='Error en login'; }
     });
 
     $('#regCreate').addEventListener('click', async ()=>{
-      const username = $('#regUser').value.trim();
-      const display = $('#regName').value.trim() || username;
-      const pass = $('#regPass').value.trim() || '1234';
-      const role = $('#regRole').value || 'officer';
-      if(!username){ $('#regMsg').textContent='Usuario requerido'; return; }
-      try{
-        const exists = await getDocs(query(COL('users'), where('username','==', username)));
-        if(!exists.empty){ $('#regMsg').textContent='Usuario ya existe'; return; }
-        await addDoc(COL('users'), { username, display, password: pass, role, badge:'', onDuty:false });
+  const username = $('#regUser').value.trim();
+  const display = $('#regName').value.trim() || username;
+  const pass = $('#regPass').value.trim() || '1234';
+  const role = $('#regRole').value || 'officer';
+
+  if(!username){
+    $('#regMsg').textContent='Usuario requerido';
+    return;
+  }
+
+  try {
+    const exists = await getDocs(query(COL('users'), where('username','==', username)));
+    if(!exists.empty){
+      $('#regMsg').textContent='Usuario ya existe';
+      return;
+    }
+    await addDoc(COL('users'), { username, display, password: pass, role, badge:'', onDuty:false });
+    $('#regMsg').style.color = '#10b981';
+    $('#regMsg').textContent='Cuenta creada correctamente. Ahora inicia sesión.';
+    await pushLog(`Cuenta creada: ${username}`);
+  } catch(e) {
+    console.error('registro', e);
+    $('#regMsg').style.color = '#ff6b6b';
+    $('#regMsg').textContent='Error creando cuenta';
+  }
+});
         $('#regMsg').textContent='Cuenta creada. Inicia sesión.';
         await pushLog(`Cuenta creada: ${username}`);
         $('#regUser').value=''; $('#regName').value=''; $('#regPass').value='';
