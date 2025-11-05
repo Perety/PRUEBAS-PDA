@@ -119,7 +119,7 @@
   <div class="wrap" role="main">
     <header>
       <div class="brand">
-        <div class="logo" aria-hidden="true"><img src="https://cdn.discordapp.com/attachments/1421898595271180360/1425878366116122654/LOGO_WIZARD_FONDO.png.png" alt="logo" style="width:100%;height:100%;object-fit:cover;border-radius:8px"></div>
+        <div class="logo" aria-hidden="true"></div>
         <div>
           <h1>Daynight RP — PDA / CAD</h1>
           <div class="subtitle">Interfaz mejorada y correcciones • Firestore</div>
@@ -777,7 +777,7 @@
       });
       $('#radioRefresh', container).addEventListener('click', ()=> loadRadioChannels(container));
       $('#radioSend', container).addEventListener('click', sendRadioMessage);
-      $('#radioMsgInput', container).addEventListener('keydown', (e)=> { if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendRadioMessage(); }});
+      $('#radioMsgInput', container).addEventListener('keydown', (e)=> { if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendRadioMessage(); });
       $('#radioSearchChannels', container).addEventListener('input', (e)=>{ const q=(e.target.value||'').toLowerCase(); document.querySelectorAll('#radioChannelsList .item').forEach(it=> it.style.display = (it.dataset.name||'').toLowerCase().includes(q) ? '' : 'none'); });
 
       // subscribe channels realtime
